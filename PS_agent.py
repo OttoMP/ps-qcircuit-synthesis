@@ -59,12 +59,33 @@ class ECM():
                 hopping_clip = v
                 break
 
-        while self.ECM.vp.action[hopping_clip] == "":
-            out_edges = hopping_clip.out_edges()
+        crossed_edges = []
 
-            total_value = 0.0
+        while self.ECM.vp.action[hopping_clip] == "":
+            h_values = []
+            sum_h_values = 0.0
+            probabilities = []
+
+            out_edges_list = self.ECM.get_out_edges(hopping_clip)
+
+            out_edges = hopping_clip.out_edges()
             for e in out_edges:
-                total_value += self.ECM.ep.h_value[e]
+                h_values.append(self.ECM.ep.h_value[e])
+                sum_h_values += self.ECM.ep.h_value[e]
+
+            for h in h_values:
+                probabilities.append(h/sum_h_values)
+
+            selected_edge = out_edges_list[np.random.choice(
+                                                        len(out_edges_list),
+                                                        1,
+                                                        p=probabilities)]
+
+            ### Add glow parameter in edges
+            crossed_edges.append(selected_edge[0][0], selected_edge[0][1])
+            hopping_clip = self.ECM.vertex(selected_edge[0][1])
+
+        return self.ECM.vp.action[hopping_clip]
 
     def update(self):
         pass
