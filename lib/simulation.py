@@ -290,7 +290,7 @@ class Experiment(object):
                 next_state, reward, done, _ = self.env.step(action)
 
                 # agent learn (ECM update)
-                self.agent.learn(state, action, reward, next_state, done)
+                self.agent.learn(reward)
 
                 # state <- next state
                 state = next_state
