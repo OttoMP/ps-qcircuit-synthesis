@@ -20,23 +20,21 @@ class Agent(object):
 class ECM():
 
     def __init__(self, actions, percepts):
-        self.ECM = Graph()
-        self.p_clips = []
-        self.new_p_clips = []
-        self.a_clips = []
-        self.a_composition = []
+        self.ECM = Graph()         # Network of clips that represents the memory
+        self.p_clips = []          # List of active percept clips
+        self.new_p_clips = []      # List of new percept clips that might be
+                                   # removed
+        self.a_clips = []          # List of action clips
+        self.a_composition = []    # List of actions that might become a new
+                                   # compose action
 
-        # Creating action properties
+        # Initializing action properties
         action = self.ECM.new_vertex_property("object")
-        self.ECM.vertex_properties["action"] = action
         action_size = self.ECM.new_vertex_property("int")
-        self.ECM.vertex_properties["action_size"] = action_size
         immunity = self.ECM.new_vertex_property("int")
-        self.ECM.vertex_properties["immunity"] = immunity
 
-        # Creating percept properties
+        # Initializing percept properties
         percept = self.ECM.new_vertex_property("object")
-        self.ECM.vertex_properties["percept"] = percept
 
         # Creating percepts-clips
         for p in percepts:
@@ -57,14 +55,21 @@ class ECM():
             for a in a_clips:
                 self.ECM.add_edge(p,a)
 
-        # Initializing edge properties h-value and glow
+        # Initializing edge properties h_value and glow
         h_value = self.ECM.new_edge_property("double")
         glow = self.ECM.new_edge_property("double")
 
+        # Setting initial values for h_value and glow
         edges = self.ECM.get_edges()
         for e in edges:
             h_value[e] = 1
             glow[e] = 0
+
+        # Adding properties to Graph
+        self.ECM.vertex_properties["action"] = action
+        self.ECM.vertex_properties["action_size"] = action_size
+        self.ECM.vertex_properties["immunity"] = immunity
+        self.ECM.vertex_properties["percept"] = percept
 
         self.ECM.edge_properties["h_value"] = h_value
         self.ECM.edge_properties["glow"] = glow
@@ -78,10 +83,6 @@ class ECM():
 
         # Random Walk until find action-clip
         while self.ECM.vp.action[hopping_clip] == None:
-            h_values = []
-            sum_h_values = 0.0
-            probabilities = []
-
             # Retrieving out edges from clip
             out_edges_list = self.ECM.get_out_edges(hopping_clip)
             out_edges = hopping_clip.out_edges()
@@ -105,7 +106,9 @@ class ECM():
             # Setting clip for next iteration
             hopping_clip = self.ECM.vertex(selected_edge[0][1])
 
+        # Add selected action to future action composition
         self.a_composition.append(self.ECM.vp.action[hopping_clip])
+
         return self.ECM.vp.action[hopping_clip], self.ECM.vp.action_size[hopping_clip]
 
     def update(self, reward, gamma, eta):
@@ -114,19 +117,26 @@ class ECM():
             self.ECM.ep.glow[e] = self.ECM.ep.glow[e] - (eta * self.ECM.ep.glow[e])
 
     def composition(self):
+        # Initializing new action clip
         action_composition = self.ECM.add_vertex()
+
         self.ECM.vp.action[action_composition] = self.a_composition
         self.ECM.vp.action_size[action_composition] = len(self.a_composition)
+
+        # Setting new action clip properties
         self.ECM.vp.immunity[action_composition] = 10
 
-        # Add edges to new action
+        # Adding edges to new action clip
         for p in self.ECM.p_clips():
             new_edge = self.ECM.add_edge(p, action_composition)
             self.ECM.ep.h_value[new_edge] = 1
             self.ECM.ep.glow[new_edge] = 0
 
+        # Resetting a_compositon
+        self.a_composition = []
+
     def add_percept(self):
-        self.p_clips.extend(new_p_clip)
+        self.p_clips.extend(new_p_clips)
         self.new_p_clips = []
 
     def clip_deletion_percept(self):
@@ -136,20 +146,13 @@ class ECM():
         self.n_p_clips = []
 
     def clip_deletion_action(self):
-        sum_h_values = []
-        probabilities = []
-
         delete_actions = [a for a in a_clips if self.ECM.vp.immunity == 0]
-        for d_a in delete_actions:
-            sum_h = 0
-            for i_e in a.in_edges():
-                sum_h += self.ECM.ep.h_value[i_e]
-            sum_h_values.append(sum_h)
 
-        probabilities = [np.power(
-                                len(self.p_clips)/sum_h_values[i],
-                                len(self.p_clips))
-                         for i,_ in enumerate(delete_actions)]
+        list_sum_h_values = [sum(self.ECM.ep.h_value[i_e] for i_e in d_a.in_edges()) for d_a in delete_actions]
+
+        probabilities = [np.power(len(self.p_clips)/sum_h,
+                                  len(self.p_clips))
+                         for sum_h in list_sum_h_values]
 
         deleted_action = delete_actions[np.random.choice(
                                                     len(delete_actions),
@@ -200,4 +203,5 @@ class PS_agent(Agent):
             self.memory.clip_deletion_action()
         else:
             self.memory.clip_deletion_percept()
+            self.memory.a_composition = []
 
