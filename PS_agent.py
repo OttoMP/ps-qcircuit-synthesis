@@ -51,8 +51,8 @@ class ECM():
             self.a_clips.append(action_clip)
 
         # Creating edges between percepts-clips and action-clips
-        for p in p_clips:
-            for a in a_clips:
+        for p in self.p_clips:
+            for a in self.a_clips:
                 self.ECM.add_edge(p,a)
 
         # Initializing edge properties h_value and glow
@@ -77,7 +77,8 @@ class ECM():
     def random_walk(self, percept):
         # Finding clip that matches percept
         for v in self.ECM.vertices():
-            if self.ECM.vp.percept[v] == percept:
+            # Ad-hoc solution for simple room
+            if np.array_equal(self.ECM.vp.percept[v], percept):
                 hopping_clip = v
                 break
 
@@ -109,13 +110,14 @@ class ECM():
         # Add selected action to future action composition
         self.a_composition.append(self.ECM.vp.action[hopping_clip])
 
-        return self.ECM.vp.action[hopping_clip], self.ECM.vp.action_size[hopping_clip]
+        return self.ECM.vp.action[hopping_clip]#, self.ECM.vp.action_size[hopping_clip]
 
     def update(self, reward, gamma, eta):
         for e in self.ECM.edges():
-            self.ECM.ep.h_value[e] = self.ECM.ep.h_value[e] - gamma * (self.ECM.ep.h_value[e] - 1) + (reward * self.ECM.ep.glow[e])
-            self.ECM.ep.glow[e] = self.ECM.ep.glow[e] - (eta * self.ECM.ep.glow[e])
+            self.ECM.ep.h_value[e] = max(1, self.ECM.ep.h_value[e] - gamma * (self.ECM.ep.h_value[e] - 1) + (reward * self.ECM.ep.glow[e]))
+            self.ECM.ep.glow[e] = max(0, self.ECM.ep.glow[e] - (eta * self.ECM.ep.glow[e]))
 
+# TODO Check again later how to do composition
     def composition(self):
         # Initializing new action clip
         action_composition = self.ECM.add_vertex()
@@ -136,14 +138,18 @@ class ECM():
         self.a_composition = []
 
     def add_percept(self):
-        self.p_clips.extend(new_p_clips)
+        self.p_clips.extend(self.new_p_clips)
         self.new_p_clips = []
 
+    def print_index(self, vertices):
+        indexes = [self.ECM.vertex_index[v] for v in vertices]
+        return indexes
+
     def clip_deletion_percept(self):
-        for n_p in self.new_p_clips:
+        for n_p in reversed(sorted(self.new_p_clips)):
             self.ECM.remove_vertex(n_p)
         self.update_clip_list()
-        self.n_p_clips = []
+        self.new_p_clips = []
 
     def clip_deletion_action(self):
         delete_actions = [a for a in a_clips if self.ECM.vp.immunity == 0]
@@ -167,41 +173,62 @@ class ECM():
         self.p_clips = []
 
         for v in self.ECM.vertices():
-            if self.ECM.vp.action != None:
-                self.a_clips.append(v)
-            elif self.ECM.vp.percept != None:
+            if self.ECM.vp.action[v] is None:
                 self.p_clips.append(v)
+            if self.ECM.vp.percept[v] is None:
+                self.a_clips.append(v)
 
 class PS_agent(Agent):
 
-    def __init__(self, actions, eta, gamma, ECM):
+    def __init__(self, actions, percepts, eta, gamma, composition_active=False):
         self.actions = actions
         self.num_actions = len(actions)
         self.eta = eta
         self.gamma = gamma
-        self.memory = ECM
+        self.memory = ECM(actions, percepts)
+        self.composition_active = composition_active
 
     def act(self, percept):
-        if percept not in self.memory.p_clips:
+        for p in self.memory.p_clips:
+            # Ad-hoc solution for simple room
+            if np.array_equal(self.memory.ECM.vp.percept[p], percept):
+                #print("Percept already in ECM", percept)
+                return self.memory.random_walk(percept)
+
+        for new_p in self.memory.new_p_clips:
+            if np.array_equal(self.memory.ECM.vp.percept[new_p], percept):
+                #print("Percept already in New Clips", percept)
+                return self.memory.random_walk(percept)
+        else:
+            #print("New percept found", percept)
             new_percept = self.memory.ECM.add_vertex()
             self.memory.ECM.vp.percept[new_percept] = percept
             self.memory.new_p_clips.append(new_percept)
             for a in self.memory.a_clips:
-                self.memory.ECM.add_edge(p,a)
+                e = self.memory.ECM.add_edge(new_percept,a)
+                self.memory.ECM.ep.h_value[e] = 1
+            return self.memory.random_walk(percept)
 
-        return self.ECM.random_walk(percept)
-
-    def learn(self, reward):
+    def learn(self, reward, done):
         # Update h-values from edges
         self.memory.update(reward, self.gamma, self.eta)
 
         # If succesful create a new action-clip with last action sequence
         # Else clear circuit and start over
         if reward > 0:
+            print("We did it!!")
             self.memory.add_percept()
-            self.memory.composition()
-            self.memory.clip_deletion_action()
+            if self.composition_active:
+                self.memory.composition()
+                self.memory.clip_deletion_action()
         else:
-            self.memory.clip_deletion_percept()
-            self.memory.a_composition = []
+            if done:
+                self.memory.clip_deletion_percept()
+                self.memory.a_composition = []
 
+interactive = True
+#%matplotlib nbagg
+env = SimpleRoomsEnv()
+agent = PS_agent(range(env.action_space.n), [env.reset()], eta=0.1, gamma=0.001)
+experiment = Experiment(env, agent)
+experiment.run_ps(10, interactive)
