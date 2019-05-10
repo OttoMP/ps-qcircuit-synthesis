@@ -57,6 +57,7 @@ class SimpleRoomsEnv(Environment):
         self.max_trajectory_length = 50
         self.tolerance = 0.1
         self._rendered_maze = self._render_maze()
+        self.step_sequence = []
 
     def step(self, action):
         s_prev = self.s
@@ -64,6 +65,7 @@ class SimpleRoomsEnv(Environment):
         reward = self.single_reward(self.s, s_prev, self.R)
         self.nstep += 1
         self.is_reset = False
+        self.step_sequence.append(action)
 
         if (reward < -1. * (self.tolerance) or reward > self.tolerance) or self.nstep == self.max_trajectory_length:
             self.reset()
@@ -92,6 +94,7 @@ class SimpleRoomsEnv(Environment):
         self.nstep = 0
         self.s = 0
         self.is_reset = True
+        self.step_sequence = []
         return self._convert_state(self.s)
 
     def _convert_state(self, s):

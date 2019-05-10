@@ -100,8 +100,8 @@ class Experiment(object):
                 R += reward # accumulate reward - for display
 
                 # if interactive display, show update for each step
-                if interactive:
-                    self.update_display_step()
+                #if interactive:
+                    #self.update_display_step()
 
             self.episode_length = np.append(self.episode_length,t) # keep episode length - for display
             self.episode_reward = np.append(self.episode_reward,R) # keep episode reward - for display
@@ -152,8 +152,8 @@ class Experiment(object):
                 R += reward # accumulate reward - for display
 
                 # if interactive display, show update for each step
-                if interactive:
-                    self.update_display_step()
+                #if interactive:
+                    #self.update_display_step()
 
             self.episode_length = np.append(self.episode_length,t) # keep episode length - for display
             self.episode_reward = np.append(self.episode_reward,R) # keep episode reward - for display

@@ -1,12 +1,5 @@
 import numpy as np
 from graph_tool.all import *
-import sys
-
-if "../" not in sys.path:
-    sys.path.append("../")
-
-from lib.envs.simple_rooms import SimpleRoomsEnv
-from lib.simulation import Experiment
 
 class Agent(object):
 
@@ -225,10 +218,18 @@ class PS_agent(Agent):
             if done:
                 self.memory.clip_deletion_percept()
                 self.memory.a_composition = []
+'''
+    def show_ECM(self):
+        print("ECM:\n")
+        print("Vertices\n")
+        for v in self.memory.ECM.vertices():
+            print("Vertice: ", self.memory.ECM.vertex_index[v])
+            print("Percept: ", self.memory.ECM.vp.percept[v])
+            print("Action: ", self.memory.ECM.vp.action[v])
+            print("--------------------------------")
 
-interactive = True
-#%matplotlib nbagg
-env = SimpleRoomsEnv()
-agent = PS_agent(range(env.action_space.n), [env.reset()], eta=0.1, gamma=0.001)
-experiment = Experiment(env, agent)
-experiment.run_ps(10, interactive)
+        edges = self.memory.ECM.get_edges()
+        for e in self.memory.ECM.edges():
+            index = self.memory.ECM.edge_index[e]
+            print("Edge connecting vertex ")
+'''
