@@ -27,8 +27,7 @@ class QuantumCircuitEnv2Qubits(Environment):
         super(QuantumCircuitEnv2Qubits, self).__init__()
         # define state and action space
         #self.S
-        self.action_space = ActionSpace(['H1', 'CNOT10'])
-        #self.action_space = ActionSpace(['X0', 'Y0', 'Z0', 'H0', 'X1', 'Y1', 'Z1', 'H1', 'CNOT10'])
+        self.action_space = ActionSpace(['X0', 'Y0', 'Z0', 'H0', 'X1', 'Y1', 'Z1', 'H1', 'CNOT10'])
 
         # define reward structure
         #self.trace_distance()
@@ -94,7 +93,7 @@ class QuantumCircuitEnv2Qubits(Environment):
         density_goal = self.density_matrix(self.goal_state)
         trace = sum(abs(np.linalg.eigvals(density_s - density_goal)))/2
 
-        if trace < self.tolerance:
+        if trace < 1e-09:
             return 100
         else:
             return 0
@@ -120,6 +119,9 @@ class QuantumCircuitEnv2Qubits(Environment):
             print("Gates:\n", file = output)
             print("qubit 0: ", self.circuit_gates[0], file = output)
             print("qubit 1: ", self.circuit_gates[1], file = output)
+            if reward > 0:
+                print("Right circuit", reward, file = output)
+            print("\n", file = output)
             output.close()
 
             self.reset()

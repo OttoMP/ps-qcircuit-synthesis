@@ -209,7 +209,7 @@ class PS_agent(Agent):
         # If succesful create a new action-clip with last action sequence
         # Else clear circuit and start over
         if reward > 0:
-            print("We did it!!")
+            #print("We did it!!")
             self.memory.add_percept()
             if self.composition_active:
                 self.memory.composition()
