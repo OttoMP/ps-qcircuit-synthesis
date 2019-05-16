@@ -116,11 +116,10 @@ class QuantumCircuitEnv2Qubits(Environment):
     def step(self,action):
         s_prev = self.s
         a, e = self.action2matrix(action)
-        self.sum_error += e
+        self.sum_error += e**2
         self.s = self.operate(self.s, a)
         reward = self.trace_distance(self.s)
         depth = self.calculate_circuit_depth(action)
-        reward = (reward-self.sum_error) * (self.min_circuit_depth/depth)
         if self.min_circuit_depth > depth:
             self.min_circuit_depth = depth
         self.is_reset = False
@@ -131,6 +130,7 @@ class QuantumCircuitEnv2Qubits(Environment):
             print("qubit 0: ", self.circuit_gates[0], file = output)
             print("qubit 1: ", self.circuit_gates[1], file = output)
             if reward > 0:
+                reward = (reward-self.sum_error) * (self.min_circuit_depth/depth)
                 print("Right circuit", reward, file = output)
             print("\n", file = output)
             output.close()
