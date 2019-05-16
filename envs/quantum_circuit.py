@@ -1,33 +1,14 @@
 import numpy as np
 from copy import deepcopy
 
-### Interface
-class Environment(object):
-
-    def reset(self):
-        raise NotImplementedError('Inheriting classes must override reset.')
-
-    def actions(self):
-        raise NotImplementedError('Inheriting classes must override actions.')
-
-    def step(self):
-        raise NotImplementedError('Inheriting classes must override step')
-
-class ActionSpace(object):
-
-    def __init__(self, actions):
-        self.actions = actions
-        self.n = len(actions)
-
 ### QuantumCircuitEnv environment
 
-class QuantumCircuitEnv2Qubits(Environment):
+class QuantumCircuitEnv2Qubits:
 
-    def __init__(self, max_circuit_depth, goal_state):
-        super(QuantumCircuitEnv2Qubits, self).__init__()
+    def __init__(self, max_circuit_depth, goal_state, tolerance):
         # define state and action space
         #self.S
-        self.action_space = ActionSpace(['X0', 'Y0', 'Z0', 'H0', 'X1', 'Y1', 'Z1', 'H1', 'CNOT10'])
+        self.action_space = ['X0', 'Y0', 'Z0', 'H0', 'X1', 'Y1', 'Z1', 'H1', 'CNOT10']
 
         # define reward structure
         #self.trace_distance()
@@ -39,7 +20,7 @@ class QuantumCircuitEnv2Qubits(Environment):
         self.min_circuit_depth = max_circuit_depth
         self.goal_state = goal_state
         self.num_qubits = 2
-        self.tolerance = 0.001
+        self.tolerance = tolerance
         self.gate_matrices = {
                 'X0':(np.matrix([[0,0,1,0],[0,0,0,1], [1,0,0,0], [0,1,0,0]]), 0.77),
                 'Y0':(np.matrix([[0,0,-1j,0],[0,0,0,-1j], [1j,0,0,0], [0,1j,0,0]]), 0.77),
@@ -100,7 +81,7 @@ class QuantumCircuitEnv2Qubits(Environment):
         density_goal = self.density_matrix(self.goal_state)
         trace = sum(abs(np.linalg.eigvals(density_s - density_goal)))/2
 
-        if trace < 1e-09:
+        if trace < self.tolerance:
             return 100
         else:
             return 0
@@ -116,21 +97,22 @@ class QuantumCircuitEnv2Qubits(Environment):
     def step(self,action):
         s_prev = self.s
         a, e = self.action2matrix(action)
-        self.sum_error += e**2
+        self.sum_error += e*e
         self.s = self.operate(self.s, a)
         reward = self.trace_distance(self.s)
         depth = self.calculate_circuit_depth(action)
-        if self.min_circuit_depth > depth:
-            self.min_circuit_depth = depth
         self.is_reset = False
 
-        if reward > self.tolerance or max(self.circuit_depths) > self.max_circuit_depth:
+        if reward > 0 or max(self.circuit_depths) > self.max_circuit_depth:
+            if self.min_circuit_depth > depth:
+                self.min_circuit_depth = depth
             output = open('output.out', 'a')
             print("Gates:\n", file = output)
             print("qubit 0: ", self.circuit_gates[0], file = output)
             print("qubit 1: ", self.circuit_gates[1], file = output)
+            print("min circuit depth: ", self.min_circuit_depth, file = output)
             if reward > 0:
-                reward = (reward-self.sum_error) * (self.min_circuit_depth/depth)
+                reward = (reward-self.sum_error) * (self.min_circuit_depth/(depth*depth))
                 print("Right circuit", reward, file = output)
             print("\n", file = output)
             output.close()

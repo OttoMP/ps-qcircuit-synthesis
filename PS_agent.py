@@ -1,15 +1,6 @@
 import numpy as np
 from graph_tool.all import *
 
-class Agent(object):
-
-    def __init__(self, actions):
-        self.actions = actions
-        self.num_actions = len(actions)
-
-    def act(self, state):
-        raise NotImplementedError
-
 class ECM():
 
     def __init__(self, actions, percepts):
@@ -171,7 +162,7 @@ class ECM():
             if self.ECM.vp.percept[v] is None:
                 self.a_clips.append(v)
 
-class PS_agent(Agent):
+class PS_agent:
 
     def __init__(self, actions, percepts, eta, gamma, composition_active=False):
         self.actions = actions
