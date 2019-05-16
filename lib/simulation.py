@@ -1,9 +1,12 @@
 import numpy as np
 import sys
-import lib.plotting as plotting
+import pandas as pd
+from collections import namedtuple
 from matplotlib import pyplot as plt
 from matplotlib import pylab
 import matplotlib.gridspec as gridspec
+
+EpisodeStats = namedtuple("Stats",["episode_lengths", "episode_rewards", "episode_running_variance"])
 
 class Simulation(object):
     def __init__(self, env, agent):
@@ -36,6 +39,32 @@ class Simulation(object):
 
         self.line, = self.ax1.plot(range(len(self.episode_length)),self.episode_length)
         self.line2, = self.ax2.plot(range(len(self.episode_reward)),self.episode_reward)
+
+    def plot_episode_stats(self, stats, smoothing_window=10, hideplot=False):
+        # Plot the episode length over time
+        fig1 = plt.figure(figsize=(10,5))
+        plt.plot(stats.episode_lengths)
+        plt.xlabel("Episode")
+        plt.ylabel("Episode Length")
+        plt.title("Episode Length over Time")
+        if hideplot:
+            plt.close(fig1)
+        else:
+            plt.show(fig1)
+
+        # Plot the episode reward over time
+        fig2 = plt.figure(figsize=(10,5))
+        rewards_smoothed = pd.Series(stats.episode_rewards).rolling(smoothing_window, min_periods=smoothing_window).mean()
+        plt.plot(rewards_smoothed)
+        plt.xlabel("Episode")
+        plt.ylabel("Episode Reward (Smoothed)")
+        plt.title("Episode Reward over Time (Smoothed over window size {})".format(smoothing_window))
+        if hideplot:
+            plt.close(fig2)
+        else:
+            plt.show(fig2)
+
+        return fig1, fig2
 
     def run_ps(self, max_number_of_episodes=100, display_frequency=1):
 
@@ -72,10 +101,10 @@ class Simulation(object):
             self.episode_reward = np.append(self.episode_reward,R) # keep episode reward - for display
 
         self.fig.clf()
-        stats = plotting.EpisodeStats(
+        stats = EpisodeStats(
             episode_lengths=self.episode_length,
             episode_rewards=self.episode_reward,
             episode_running_variance=np.zeros(max_number_of_episodes))
-        lenght_plot, reward_plot = plotting.plot_episode_stats(stats, display_frequency)
+        lenght_plot, reward_plot = self.plot_episode_stats(stats, display_frequency)
         lenght_plot.savefig("lenght.png")
         reward_plot.savefig("reward.png")
