@@ -6,9 +6,9 @@ from matplotlib import pyplot as plt
 from matplotlib import pylab
 import matplotlib.gridspec as gridspec
 
-EpisodeStats = namedtuple("Stats",["episode_lengths", "episode_rewards", "episode_running_variance"])
+EpisodeStats = namedtuple("Stats",["episode_lengths", "episode_rewards", "episode_depths", "episode_running_variance"])
 
-class Simulation(object):
+class Simulation:
     def __init__(self, env, agent):
 
         self.env = env
@@ -26,7 +26,6 @@ class Simulation(object):
         self.ax1 = pylab.subplot(gs[0, 1])
         self.ax1.yaxis.set_label_position("right")
         self.ax1.set_ylabel('Length')
-
         self.ax1.set_xlim(0, max(10, len(self.episode_length)+1))
         self.ax1.set_ylim(0, 51)
 
@@ -45,28 +44,40 @@ class Simulation(object):
         fig1 = plt.figure(figsize=(10,5))
         plt.plot(stats.episode_lengths)
         plt.xlabel("Episode")
-        plt.ylabel("Episode Length")
-        plt.title("Episode Length over Time")
+        plt.ylabel("Total Gates in circuit")
+        plt.title("Total Gates over Time")
         if hideplot:
             plt.close(fig1)
         else:
             plt.show(fig1)
 
-        # Plot the episode reward over time
+        #Plot the episode circuit depth over time
         fig2 = plt.figure(figsize=(10,5))
-        rewards_smoothed = pd.Series(stats.episode_rewards).rolling(smoothing_window, min_periods=smoothing_window).mean()
-        plt.plot(rewards_smoothed)
+        plt.plot(stats.episode_depths)
         plt.xlabel("Episode")
-        plt.ylabel("Episode Reward (Smoothed)")
-        plt.title("Episode Reward over Time (Smoothed over window size {})".format(smoothing_window))
+        plt.ylabel("Circuit depth")
+        plt.title("Circuit Depth over Time")
         if hideplot:
             plt.close(fig2)
         else:
             plt.show(fig2)
 
-        return fig1, fig2
+        # Plot the episode reward over time
+        fig3 = plt.figure(figsize=(10,5))
+        rewards_smoothed = pd.Series(stats.episode_rewards).rolling(smoothing_window, min_periods=smoothing_window).mean()
+        plt.plot(rewards_smoothed)
+        plt.xlabel("Episode")
+        plt.ylabel("Episode Reward")
+        plt.title("Episode Reward over Time")
+        if hideplot:
+            plt.close(fig3)
+        else:
+            plt.show(fig3)
+
+        return fig1, fig2, fig3
 
     def run_ps(self, max_number_of_episodes=100, display_frequency=1):
+        circuit_depth = np.array([0])
 
         # repeat for each episode
         for episode_number in range(max_number_of_episodes):
@@ -87,7 +98,7 @@ class Simulation(object):
                 action = self.agent.act(percept)
 
                 # take action, observe reward and next percept
-                next_percept, reward, done, _ = self.env.step(action)
+        k       next_percept, reward, done, depth = self.env.step(action)
 
                 # agent learn (ECM update)
                 self.agent.learn(reward, done)
@@ -99,12 +110,16 @@ class Simulation(object):
 
             self.episode_length = np.append(self.episode_length,t) # keep episode length - for display
             self.episode_reward = np.append(self.episode_reward,R) # keep episode reward - for display
+            circuit_depth = np.append(circuit_depth, depth)        # keep episode depth - for display
 
+        # Make Graphics and save them in file
         self.fig.clf()
         stats = EpisodeStats(
             episode_lengths=self.episode_length,
             episode_rewards=self.episode_reward,
+            episode_depths=circuit_depth,
             episode_running_variance=np.zeros(max_number_of_episodes))
-        lenght_plot, reward_plot = self.plot_episode_stats(stats, display_frequency)
-        lenght_plot.savefig("lenght.png")
+        lenght_plot, depth_plot, reward_plot = self.plot_episode_stats(stats, display_frequency)
+        lenght_plot.savefig("total_gates.png")
+        depth_plot.savefig("depth.png")
         reward_plot.savefig("reward.png")
