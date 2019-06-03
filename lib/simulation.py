@@ -98,7 +98,7 @@ class Simulation:
                 action = self.agent.act(percept)
 
                 # take action, observe reward and next percept
-        k       next_percept, reward, done, depth = self.env.step(action)
+                next_percept, reward, done, depth = self.env.step(action)
 
                 # agent learn (ECM update)
                 self.agent.learn(reward, done)

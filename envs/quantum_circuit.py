@@ -115,6 +115,8 @@ class QuantumCircuitEnv2Qubits:
     def operate(self, s, a):
         return np.dot(s,a)
 
+    # Given an action, update internal state and return reward. If a final
+    # state is reached, reset environment
     def step(self,action):
         s_prev = self.s
         a, e = self.action2matrix(action)
