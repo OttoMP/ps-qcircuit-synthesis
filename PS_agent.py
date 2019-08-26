@@ -23,7 +23,7 @@ class ECM():
         for p in percepts:
             percept_clip = self.ECM.add_vertex()
             percept[percept_clip] = p
-            v_name[percept_clip] = "aaa"
+            v_name[percept_clip] = self.extract_qdata(p)
             self.p_clips.append(percept_clip)
 
         # Creating action-clips
@@ -39,8 +39,8 @@ class ECM():
                 self.ECM.add_edge(p,a)
 
         # Initializing edge properties h_value and glow
-        h_value = self.ECM.new_edge_property("double")
-        glow = self.ECM.new_edge_property("double")
+        h_value = self.ECM.new_edge_property("int")
+        glow = self.ECM.new_edge_property("int")
 
         # Setting initial values for h_value and glow
         edges = self.ECM.get_edges()
@@ -129,6 +129,10 @@ class ECM():
             if self.ECM.vp.percept[v] is None:
                 self.a_clips.append(v)
 
+    def extract_qdata(self, percept):
+        return ''.join(str(percept).split('Qobj data =')[1].split('\n'))
+
+
 class PS_agent:
 
     def __init__(self, actions, percepts, eta, gamma):
@@ -136,9 +140,10 @@ class PS_agent:
         self.num_actions = len(actions)              # Total number of actions
         self.eta = eta                               # Glow damping parameter
         self.gamma = gamma                           # H-value damping parameter
-        self.memory = ECM(actions, percepts)         # Agent memory
+        self.memory = ECM(actions, percepts) # Agent memory
 
     def act(self, percept):
+        treated_percept = self.memory.extract_qdata(percept)
         # If percept is already in memory look for corresponding clip and start
         # a random walk
         for p in self.memory.p_clips:
@@ -155,7 +160,7 @@ class PS_agent:
             # random walk
             new_percept = self.memory.ECM.add_vertex()
             self.memory.ECM.vp.percept[new_percept] = percept
-            self.memory.ECM.vp.name[new_percept] = str(percept)
+            self.memory.ECM.vp.name[new_percept] = "aa" #treated_percept
             self.memory.new_p_clips.append(new_percept)
             for a in self.memory.a_clips:
                 e = self.memory.ECM.add_edge(new_percept,a)
@@ -176,5 +181,5 @@ class PS_agent:
 
     def print_ECM(self):
         view = GraphView(self.memory.ECM)
-        graph_draw(view, vertex_text=view.vp["name"], edge_text=view.ep.h_value, edge_text_color="white",
-                vertex_font_size=18, output_size=(1024, 768), output="ECM.png")
+        graph_draw(view, vertex_text=view.vp["name"], edge_text=view.ep["h_value"], edge_text_color="white",
+                vertex_font_size=14, output_size=(1920, 1080), output="ECM.png")

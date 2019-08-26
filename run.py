@@ -46,4 +46,4 @@ agent = PS_agent(env.action_space, [env.reset()], eta=0.1, gamma=0.1)
 experiment = Simulation(env, agent)
 
 # Run simulation 200 times
-experiment.run_ps(2)
+experiment.run_ps(100)

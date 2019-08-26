@@ -53,7 +53,6 @@ class Simulation:
             while not done:
 
                 t += 1 # increase step counter - for display
-
                 # Return action from PS Agent memory
                 action = self.agent.act(percept)
 
