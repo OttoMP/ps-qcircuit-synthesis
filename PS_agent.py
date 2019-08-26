@@ -1,5 +1,5 @@
 import numpy as np
-from graph_tool.all import *
+from graph_tool.all import Graph, graph_draw, GraphView
 
 class ECM():
 
@@ -9,6 +9,9 @@ class ECM():
         self.new_p_clips = []      # List of new percept clips that might be
                                    # removed
         self.a_clips = []          # List of action clips
+
+        # Initializing clips names for printing later
+        v_name = self.ECM.new_vertex_property("string")
 
         # Initializing action properties
         action = self.ECM.new_vertex_property("object")
@@ -20,12 +23,14 @@ class ECM():
         for p in percepts:
             percept_clip = self.ECM.add_vertex()
             percept[percept_clip] = p
+            v_name[percept_clip] = "aaa"
             self.p_clips.append(percept_clip)
 
         # Creating action-clips
         for a in actions:
             action_clip = self.ECM.add_vertex()
             action[action_clip] = a
+            v_name[action_clip] = a
             self.a_clips.append(action_clip)
 
         # Creating edges between percepts-clips and action-clips
@@ -46,6 +51,7 @@ class ECM():
         # Adding properties to Graph
         self.ECM.vertex_properties["action"] = action
         self.ECM.vertex_properties["percept"] = percept
+        self.ECM.vertex_properties["name"] = v_name
 
         self.ECM.edge_properties["h_value"] = h_value
         self.ECM.edge_properties["glow"] = glow
@@ -149,6 +155,7 @@ class PS_agent:
             # random walk
             new_percept = self.memory.ECM.add_vertex()
             self.memory.ECM.vp.percept[new_percept] = percept
+            self.memory.ECM.vp.name[new_percept] = str(percept)
             self.memory.new_p_clips.append(new_percept)
             for a in self.memory.a_clips:
                 e = self.memory.ECM.add_edge(new_percept,a)
@@ -166,3 +173,8 @@ class PS_agent:
                 self.memory.add_percept()
             else:
                 self.memory.clip_deletion_percept()
+
+    def print_ECM(self):
+        view = GraphView(self.memory.ECM)
+        graph_draw(view, vertex_text=view.vp["name"], edge_text=view.ep.h_value, edge_text_color="white",
+                vertex_font_size=18, output_size=(1024, 768), output="ECM.png")
