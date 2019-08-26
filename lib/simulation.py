@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import pandas as pd
+import csv
 from collections import namedtuple
 from matplotlib import pyplot as plt
 from matplotlib import pylab
@@ -38,6 +39,28 @@ class Simulation:
 
         self.line, = self.ax1.plot(range(len(self.episode_length)),self.episode_length)
         self.line2, = self.ax2.plot(range(len(self.episode_reward)),self.episode_reward)
+
+    def save_csv(self, stats):
+        with open('length.csv', 'w') as csvfile:
+            rewardwriter = csv.writer(csvfile, delimiter=',',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            for i, e in enumerate(stats.episode_lengths):
+                rewardwriter.writerow([i,e])
+            csvfile.close()
+
+        with open('depth.csv', 'w') as csvfile:
+            rewardwriter = csv.writer(csvfile, delimiter=',',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            for i, e in enumerate(stats.episode_depths):
+                rewardwriter.writerow([i,e])
+            csvfile.close()
+
+        with open('reward.csv', 'w') as csvfile:
+            rewardwriter = csv.writer(csvfile, delimiter=',',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            for i, e in enumerate(stats.episode_rewards):
+                rewardwriter.writerow([i,e])
+            csvfile.close()
 
     def plot_episode_stats(self, stats, smoothing_window=10, hideplot=False):
         # Plot the episode length over time
@@ -119,7 +142,10 @@ class Simulation:
             episode_rewards=self.episode_reward,
             episode_depths=circuit_depth,
             episode_running_variance=np.zeros(max_number_of_episodes))
+        self.save_csv(stats)
+        '''
         lenght_plot, depth_plot, reward_plot = self.plot_episode_stats(stats, display_frequency)
         lenght_plot.savefig("total_gates.png")
         depth_plot.savefig("depth.png")
         reward_plot.savefig("reward.png")
+        '''
