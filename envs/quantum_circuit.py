@@ -17,7 +17,7 @@ class QuantumCircuitEnv2Qubits:
         #       target qubit.
 
         # Reward structure
-        # self.trace_distance()
+        # self.calc_trace_distance()
 
         # Transitions
         # self.operate()
@@ -94,7 +94,7 @@ class QuantumCircuitEnv2Qubits:
                 return max(self.circuit_depths)
 
     # Calculate trace distance between current state and goal state
-    def trace_distance(self, s):
+    def calc_trace_distance(self, s):
         density_s = ket2dm(s)
         density_goal = ket2dm(self.goal_state)
         trace = tracedist(density_s, density_goal)
@@ -111,7 +111,7 @@ class QuantumCircuitEnv2Qubits:
         a, e = self.action2matrix(action)
         self.sum_error += e
         self.s = a*self.s # Multiply gate matrix and qubit vector
-        reward = self.trace_distance(self.s)
+        reward = self.calc_trace_distance(self.s)
         depth = self.calculate_circuit_depth(action)
         self.is_reset = False
 
@@ -153,7 +153,7 @@ class QuantumCircuitEnv3Qubits:
         #       target qubit.
 
         # Reward structure
-        # self.trace_distance()
+        # self.calc_trace_distance()
 
         # Transitions
         # self.operate()
@@ -266,7 +266,7 @@ class QuantumCircuitEnv3Qubits:
                 return max(self.circuit_depths)
 
     # Calculate trace distance between current state and goal state
-    def trace_distance(self, s):
+    def calc_trace_distance(self, s):
         density_s = ket2dm(s)
         density_goal = ket2dm(self.goal_state)
         trace = tracedist(density_s, density_goal)
@@ -283,28 +283,33 @@ class QuantumCircuitEnv3Qubits:
         a, e = self.action2matrix(action)
         self.sum_error += e
         self.s = a*self.s # Multiply gate matrix and qubit vector
-        reward = self.trace_distance(self.s)
+        reward = self.calc_trace_distance(self.s)
         depth = self.calculate_circuit_depth(action)
         self.is_reset = False
 
         # If current circuit was rewarded or maximum circuit depth reached,
         # print result and reset environment
         if max(self.circuit_depths) > self.max_circuit_depth:
-            if reward > 0:
-                if self.min_circuit_depth > depth:
-                    self.min_circuit_depth = depth
-                output = open('output.out', 'a')
-                print("Gates:\n", file = output)
-                print("qubit 0: ", self.circuit_gates[0], file = output)
-                print("qubit 1: ", self.circuit_gates[1], file = output)
-                print("qubit 2: ", self.circuit_gates[2], file = output)
-                print("min circuit depth: ", self.min_circuit_depth, file = output)
-                if reward > 0:
-                    reward = (reward-self.sum_error) * (self.min_circuit_depth/(depth))
-                    print("Right circuit", reward, file = output)
-                print("\n", file = output)
-                output.close()
             self.reset()
+            reward = 0
+
+        if reward > 0:
+            if self.min_circuit_depth > depth:
+                self.min_circuit_depth = depth
+            reward = (reward-self.sum_error) * (self.min_circuit_depth/depth)
+
+            output = open('output.out', 'a')
+            print("Gates:\n", file = output)
+            print("qubit 0: ", self.circuit_gates[0], file = output)
+            print("qubit 1: ", self.circuit_gates[1], file = output)
+            print("qubit 2: ", self.circuit_gates[2], file = output)
+            print("min circuit depth: ", self.min_circuit_depth, file = output)
+            print("Right circuit", reward, file = output)
+            print("\n", file = output)
+            output.close()
+
+            self.reset()
+
 
         return (self.s, reward, self.is_reset, depth)
 
@@ -326,7 +331,7 @@ class QuantumCircuitEnv4Qubits:
         #       target qubit.
 
         # Reward structure
-        # self.trace_distance()
+        # self.calc_trace_distance()
 
         # Transitions
         # self.operate()
@@ -463,7 +468,7 @@ class QuantumCircuitEnv4Qubits:
                 return max(self.circuit_depths)
 
     # Calculate trace distance between current state and goal state
-    def trace_distance(self, s):
+    def calc_trace_distance(self, s):
         density_s = ket2dm(s)
         density_goal = ket2dm(self.goal_state)
         trace = tracedist(density_s, density_goal)
@@ -480,7 +485,7 @@ class QuantumCircuitEnv4Qubits:
         a, e = self.action2matrix(action)
         self.sum_error += e
         self.s = a*self.s # Multiply gate matrix and qubit vector
-        reward = self.trace_distance(self.s)
+        reward = self.calc_trace_distance(self.s)
         depth = self.calculate_circuit_depth(action)
         self.is_reset = False
 
@@ -524,7 +529,7 @@ class QuantumCircuitEnv5Qubits:
         #       target qubit.
 
         # Reward structure
-        # self.trace_distance()
+        # self.calc_trace_distance()
 
         # Transitions
         # self.operate()
@@ -698,7 +703,7 @@ class QuantumCircuitEnv5Qubits:
                 return max(self.circuit_depths)
 
     # Calculate trace distance between current state and goal state
-    def trace_distance(self, s):
+    def calc_trace_distance(self, s):
         density_s = ket2dm(s)
         density_goal = ket2dm(self.goal_state)
         trace = tracedist(density_s, density_goal)
@@ -715,7 +720,7 @@ class QuantumCircuitEnv5Qubits:
         a, e = self.action2matrix(action)
         self.sum_error += e
         self.s = a*self.s # Multiply gate matrix and qubit vector
-        reward = self.trace_distance(self.s)
+        reward = self.calc_trace_distance(self.s)
         depth = self.calculate_circuit_depth(action)
         self.is_reset = False
 

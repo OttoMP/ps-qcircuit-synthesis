@@ -42,6 +42,7 @@ class Simulation:
         # repeat for each episode
         for episode_number in range(max_number_of_episodes):
 
+            print("Initiating Episode", episode_number)
             # initialize state
             percept = self.env.reset()
 
@@ -58,6 +59,9 @@ class Simulation:
 
                 # take action, observe reward and next percept
                 next_percept, reward, done, depth = self.env.step(action)
+
+                if reward > 0:
+                    print("You have learned something new!", reward)
 
                 # agent learn (ECM update)
                 self.agent.learn(reward, done)

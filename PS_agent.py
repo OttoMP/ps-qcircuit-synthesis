@@ -160,7 +160,7 @@ class PS_agent:
             # random walk
             new_percept = self.memory.ECM.add_vertex()
             self.memory.ECM.vp.percept[new_percept] = percept
-            self.memory.ECM.vp.name[new_percept] = "aa" #treated_percept
+            self.memory.ECM.vp.name[new_percept] = treated_percept
             self.memory.new_p_clips.append(new_percept)
             for a in self.memory.a_clips:
                 e = self.memory.ECM.add_edge(new_percept,a)
@@ -174,6 +174,9 @@ class PS_agent:
         # If last episode was succesful, add new percepts to the permanent
         # list. Else, clear recently created percept clips
         if done:
+            for e in self.memory.ECM.edges():
+                self.memory.ECM.ep.glow[e] = 0
+
             if reward > 0:
                 self.memory.add_percept()
             else:
