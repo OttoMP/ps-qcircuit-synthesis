@@ -114,26 +114,29 @@ class QuantumCircuitEnv2Qubits:
         reward = self.calc_trace_distance(self.s)
         depth = self.calculate_circuit_depth(action)
         self.is_reset = False
+        circuit_gates_return = deepcopy(self.circuit_gates)
 
         # If current circuit was rewarded or maximum circuit depth reached,
         # print result and reset environment
-        if reward > 0 or max(self.circuit_depths) > self.max_circuit_depth:
+        if max(self.circuit_depths) > self.max_circuit_depth:
+            self.reset()
+            reward = 0
+
+        if reward > 0:
+            reward = (reward-self.sum_error) * (self.min_circuit_depth/(depth))
             if self.min_circuit_depth > depth:
                 self.min_circuit_depth = depth
             output = open('output.out', 'a')
-            print("Gates:\n", file = output)
+            print("Gates:", file = output)
             print("qubit 0: ", self.circuit_gates[0], file = output)
             print("qubit 1: ", self.circuit_gates[1], file = output)
             print("min circuit depth: ", self.min_circuit_depth, file = output)
-            if reward > 0:
-                reward = (reward-self.sum_error) * (self.min_circuit_depth/(depth*depth))
-                print("Right circuit", reward, file = output)
+            print("Reward", reward, file = output)
             print("\n", file = output)
             output.close()
-
             self.reset()
 
-        return (self.s, reward, self.is_reset, depth)
+        return (self.s, reward, self.is_reset, circuit_gates_return)
 
     # Return the computational basis |00>
     def init_comp_basis(self):
@@ -286,6 +289,7 @@ class QuantumCircuitEnv3Qubits:
         reward = self.calc_trace_distance(self.s)
         depth = self.calculate_circuit_depth(action)
         self.is_reset = False
+        circuit_gates_return = deepcopy(self.circuit_gates)
 
         # If current circuit was rewarded or maximum circuit depth reached,
         # print result and reset environment
@@ -294,24 +298,21 @@ class QuantumCircuitEnv3Qubits:
             reward = 0
 
         if reward > 0:
+            reward = (reward-self.sum_error) * (self.min_circuit_depth/(depth))
             if self.min_circuit_depth > depth:
                 self.min_circuit_depth = depth
-            reward = (reward-self.sum_error) * (self.min_circuit_depth/depth)
-
             output = open('output.out', 'a')
-            print("Gates:\n", file = output)
+            print("Gates:", file = output)
             print("qubit 0: ", self.circuit_gates[0], file = output)
             print("qubit 1: ", self.circuit_gates[1], file = output)
             print("qubit 2: ", self.circuit_gates[2], file = output)
             print("min circuit depth: ", self.min_circuit_depth, file = output)
-            print("Right circuit", reward, file = output)
+            print("Reward", reward, file = output)
             print("\n", file = output)
             output.close()
-
             self.reset()
 
-
-        return (self.s, reward, self.is_reset, depth)
+        return (self.s, reward, self.is_reset, circuit_gates_return)
 
     # Return the computational basis |000>
     def init_comp_basis(self):
@@ -488,28 +489,31 @@ class QuantumCircuitEnv4Qubits:
         reward = self.calc_trace_distance(self.s)
         depth = self.calculate_circuit_depth(action)
         self.is_reset = False
+        circuit_gates_return = deepcopy(self.circuit_gates)
 
         # If current circuit was rewarded or maximum circuit depth reached,
         # print result and reset environment
         if max(self.circuit_depths) > self.max_circuit_depth:
-            if reward > 0:
-                if self.min_circuit_depth > depth:
-                    self.min_circuit_depth = depth
-                output = open('output.out', 'a')
-                print("Gates:\n", file = output)
-                print("qubit 0: ", self.circuit_gates[0], file = output)
-                print("qubit 1: ", self.circuit_gates[1], file = output)
-                print("qubit 2: ", self.circuit_gates[2], file = output)
-                print("qubit 3: ", self.circuit_gates[3], file = output)
-                print("min circuit depth: ", self.min_circuit_depth, file = output)
-                if reward > 0:
-                    reward = (reward-self.sum_error) * (self.min_circuit_depth/(depth))
-                    print("Right circuit", reward, file = output)
-                print("\n", file = output)
-                output.close()
+            self.reset()
+            reward = 0
+
+        if reward > 0:
+            reward = (reward-self.sum_error) * (self.min_circuit_depth/(depth))
+            if self.min_circuit_depth > depth:
+                self.min_circuit_depth = depth
+            output = open('output.out', 'a')
+            print("Gates:\n", file = output)
+            print("qubit 0: ", self.circuit_gates[0], file = output)
+            print("qubit 1: ", self.circuit_gates[1], file = output)
+            print("qubit 2: ", self.circuit_gates[2], file = output)
+            print("qubit 3: ", self.circuit_gates[3], file = output)
+            print("min circuit depth: ", self.min_circuit_depth, file = output)
+            print("Right circuit", reward, file = output)
+            print("\n", file = output)
+            output.close()
             self.reset()
 
-        return (self.s, reward, self.is_reset, depth)
+        return (self.s, reward, self.is_reset, circuit_gates_return)
 
     # Return the computational basis |000>
     def init_comp_basis(self):
@@ -723,29 +727,32 @@ class QuantumCircuitEnv5Qubits:
         reward = self.calc_trace_distance(self.s)
         depth = self.calculate_circuit_depth(action)
         self.is_reset = False
+        circuit_gates_return = deepcopy(self.circuit_gates)
 
         # If current circuit was rewarded or maximum circuit depth reached,
         # print result and reset environment
         if max(self.circuit_depths) > self.max_circuit_depth:
-            if reward > 0:
-                if self.min_circuit_depth > depth:
-                    self.min_circuit_depth = depth
-                output = open('output.out', 'a')
-                print("Gates:\n", file = output)
-                print("qubit 0: ", self.circuit_gates[0], file = output)
-                print("qubit 1: ", self.circuit_gates[1], file = output)
-                print("qubit 2: ", self.circuit_gates[2], file = output)
-                print("qubit 3: ", self.circuit_gates[3], file = output)
-                print("qubit 4: ", self.circuit_gates[3], file = output)
-                print("min circuit depth: ", self.min_circuit_depth, file = output)
-                if reward > 0:
-                    reward = (reward-self.sum_error) * (self.min_circuit_depth/(depth))
-                    print("Right circuit", reward, file = output)
-                print("\n", file = output)
-                output.close()
+            self.reset()
+            reward = 0
+
+        if reward > 0:
+            reward = (reward-self.sum_error) * (self.min_circuit_depth/(depth))
+            if self.min_circuit_depth > depth:
+                self.min_circuit_depth = depth
+            output = open('output.out', 'a')
+            print("Gates:\n", file = output)
+            print("qubit 0: ", self.circuit_gates[0], file = output)
+            print("qubit 1: ", self.circuit_gates[1], file = output)
+            print("qubit 2: ", self.circuit_gates[2], file = output)
+            print("qubit 3: ", self.circuit_gates[3], file = output)
+            print("qubit 4: ", self.circuit_gates[3], file = output)
+            print("min circuit depth: ", self.min_circuit_depth, file = output)
+            print("Right circuit", reward, file = output)
+            print("\n", file = output)
+            output.close()
             self.reset()
 
-        return (self.s, reward, self.is_reset, depth)
+        return (self.s, reward, self.is_reset, circuit_gates_return)
 
     # Return the computational basis |000>
     def init_comp_basis(self):

@@ -3,7 +3,7 @@ import csv
 from collections import namedtuple
 
 EpisodeStats = namedtuple("Stats",["episode_lengths", "episode_rewards",
-                                   "episode_depths"])
+                                   "episode_circuits_found"])
 
 class Simulation:
     def __init__(self, env, agent):
@@ -22,13 +22,6 @@ class Simulation:
                 rewardwriter.writerow([i,e])
             csvfile.close()
 
-        with open('csvfiles/depth.csv', 'w') as csvfile:
-            rewardwriter = csv.writer(csvfile, delimiter=',',
-                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            for i, e in enumerate(stats.episode_depths):
-                rewardwriter.writerow([i,e])
-            csvfile.close()
-
         with open('csvfiles/reward.csv', 'w') as csvfile:
             rewardwriter = csv.writer(csvfile, delimiter=',',
                                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -36,8 +29,16 @@ class Simulation:
                 rewardwriter.writerow([i,e])
             csvfile.close()
 
+        with open('csvfiles/circuits_found.csv', 'w') as csvfile:
+            rewardwriter = csv.writer(csvfile, delimiter=',',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            for i, e in enumerate(stats.episode_circuits_found):
+                rewardwriter.writerow([i,e])
+            csvfile.close()
+
     def run_ps(self, max_number_of_episodes=100, display_frequency=1):
-        circuit_depth = np.array([0])
+        circuits_found_array = np.array([0])
+        circuits_found = set()
 
         # repeat for each episode
         for episode_number in range(max_number_of_episodes):
@@ -58,10 +59,12 @@ class Simulation:
                 action = self.agent.act(percept)
 
                 # take action, observe reward and next percept
-                next_percept, reward, done, depth = self.env.step(action)
+                next_percept, reward, done, circuit_found = self.env.step(action)
 
                 if reward > 0:
                     print("You have learned something new!", reward)
+                    circuits_found.add(str(circuit_found))
+
 
                 # agent learn (ECM update)
                 self.agent.learn(reward, done)
@@ -73,14 +76,13 @@ class Simulation:
 
             self.episode_length = np.append(self.episode_length,t) # keep episode length - for display
             self.episode_reward = np.append(self.episode_reward,R) # keep episode reward - for display
-            circuit_depth = np.append(circuit_depth, depth)        # keep episode depth - for display
+            circuits_found_array = np.append(circuits_found_array, len(circuits_found)) # keep circuits found - for display
 
         # Make Graphics and save them in file
-        #self.fig.clf()
         stats = EpisodeStats(
             episode_lengths=self.episode_length,
             episode_rewards=self.episode_reward,
-            episode_depths=circuit_depth)
+            episode_circuits_found=circuits_found_array)
 
         self.save_csv(stats)
         self.agent.print_ECM()
