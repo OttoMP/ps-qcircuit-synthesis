@@ -28,16 +28,16 @@ b51 = tensor(basis(2,1), basis(2,1), basis(2,1), basis(2,1), basis(2,1))
 
 
 # Bell State to be reached
-#goal_state = 1/np.sqrt(2) * (zero+three)
-goal_state = 1/np.sqrt(2) * (b30+b31)
+goal_state = 1/np.sqrt(2) * (zero+three)
+#goal_state = 1/np.sqrt(2) * (b30+b31)
 #goal_state = 1/np.sqrt(2) * (b40+b41)
 #goal_state = 1/np.sqrt(2) * (b50+b51)
 
 # Enviroments instantiation
-#env = QuantumCircuitEnv2Qubits(4, goal_state, 1e-13)
-env = QuantumCircuitEnv3Qubits(5, goal_state, 1e-13)
-#env = QuantumCircuitEnv4Qubits(7, goal_state, 1e-13)
-#env = QuantumCircuitEnv5Qubits(9, goal_state, 1e-13)
+env = QuantumCircuitEnv2Qubits(4, goal_state, 1e-13)
+#env = QuantumCircuitEnv3Qubits(5, goal_state, 1e-13)
+#env = QuantumCircuitEnv4Qubits(6, goal_state, 1e-13)
+#env = QuantumCircuitEnv5Qubits(7, goal_state, 1e-13)
 
 # Agents instantiation
 agent = PS_agent(env.action_space, [env.reset()], eta=0.001, gamma=0.1)
@@ -46,4 +46,4 @@ agent = PS_agent(env.action_space, [env.reset()], eta=0.001, gamma=0.1)
 experiment = Simulation(env, agent)
 
 # Run simulation 200 times
-experiment.run_ps(2000)
+experiment.run_ps(200)
