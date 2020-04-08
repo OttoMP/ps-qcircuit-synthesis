@@ -275,7 +275,7 @@ class QuantumCircuitEnv3Qubits:
         trace = tracedist(density_s, density_goal)
 
         if trace < self.tolerance:
-            return 100
+            return 150
         else:
             return 0
 
@@ -475,7 +475,7 @@ class QuantumCircuitEnv4Qubits:
         trace = tracedist(density_s, density_goal)
 
         if trace < self.tolerance:
-            return 100
+            return 200
         else:
             return 0
 
@@ -515,7 +515,7 @@ class QuantumCircuitEnv4Qubits:
 
         return (self.s, reward, self.is_reset, circuit_gates_return)
 
-    # Return the computational basis |000>
+    # Return the computational basis |0000>
     def init_comp_basis(self):
         comp_basis = tensor(basis(2,0), basis(2,0), basis(2,0), basis(2,0))
         return comp_basis
@@ -713,7 +713,7 @@ class QuantumCircuitEnv5Qubits:
         trace = tracedist(density_s, density_goal)
 
         if trace < self.tolerance:
-            return 100
+            return 1000
         else:
             return 0
 
@@ -745,7 +745,7 @@ class QuantumCircuitEnv5Qubits:
             print("qubit 1: ", self.circuit_gates[1], file = output)
             print("qubit 2: ", self.circuit_gates[2], file = output)
             print("qubit 3: ", self.circuit_gates[3], file = output)
-            print("qubit 4: ", self.circuit_gates[3], file = output)
+            print("qubit 4: ", self.circuit_gates[4], file = output)
             print("min circuit depth: ", self.min_circuit_depth, file = output)
             print("Right circuit", reward, file = output)
             print("\n", file = output)
@@ -754,7 +754,7 @@ class QuantumCircuitEnv5Qubits:
 
         return (self.s, reward, self.is_reset, circuit_gates_return)
 
-    # Return the computational basis |000>
+    # Return the computational basis |00000>
     def init_comp_basis(self):
         comp_basis = tensor(basis(2,0), basis(2,0), basis(2,0), basis(2,0), basis(2,0))
         return comp_basis

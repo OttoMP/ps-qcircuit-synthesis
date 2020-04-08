@@ -43,8 +43,7 @@ class ECM():
         glow = self.ECM.new_edge_property("int")
 
         # Setting initial values for h_value and glow
-        edges = self.ECM.get_edges()
-        for e in edges:
+        for e in self.ECM.edges():
             h_value[e] = 1
             glow[e] = 0
 
