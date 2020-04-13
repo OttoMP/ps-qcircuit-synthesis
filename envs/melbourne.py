@@ -4,7 +4,7 @@ from copy import deepcopy
 
 ### QuantumCircuitEnv environment
 
-class IBMQMelbourne:
+class QuantumCircuitEnvNQubit:
 
     def __init__(self, num_qubits, max_circuit_depth, goal_state, tolerance):
         # State and action space
@@ -23,7 +23,11 @@ class IBMQMelbourne:
         # self.operate()
 
         #TODO
-        self.action_space = {}
+        self.action_space = {'X':(sigmax(), 1.54),
+                             'Y':(sigmay(), 1.54),
+                             'Z':(sigmaz(), 1.54),
+                             'H':(snot(N=1), 1.54),
+                             'CNOT':(qeye(2), 23.8)}
         self.max_circuit_depth = max_circuit_depth # Maximum depth accepted by
                                                    # the circuit
         self.min_circuit_depth = max_circuit_depth # Minimum depth found while
@@ -55,47 +59,42 @@ class IBMQMelbourne:
         return self.s
 
     # Return corresponding matrix of given gate
-    def action2matrix(self, action, pos_gate):
-        # Return gate description from action space
+    def action2matrix(self, action, controlled, pos_con, pos_tar):
+        # Return gate matrix from action space
         gate, error = self.action_space[action]
-        #elif action == 'CNOT10': return (cnot(N=self.num_qubits, control=pos_con, target=pos_tar), 23.8)
 
-        # Matrices representation of the possible gates
-        for q in range(self.num_qubits):
-            if q == pos_gate:
-                pass
-            if q < pos_gate:
-                gate = tensor(qeye(2), gate)
-            if q > pos_gate:
-                gate = tensor(gate, qeye(2))
+        # If gate is not controlled, create the tensor product to apply in the right qubit
+        if not controlled:
+            for q in range(self.num_qubits):
+                if q == pos_tar:
+                    pass
+                if q < pos_tar:
+                    gate = tensor(gate, qeye(2))
+                if q > pos_tar:
+                    gate = tensor(qeye(2), gate)
+        else:
+            gate = cnot(N=self.num_qubits, control=pos_con, target=pos_tar)
 
         return gate, error
 
     # Update circuit depth
-    def calculate_circuit_depth(self, a, pos_gate):
-        #TODO in case gate is controlled
-        '''
-        if a == 'CNOT10':
+    def calculate_circuit_depth(self, a, controlled, pos_con, pos_tar):
+        if controlled:
             self.circuit_depths[pos_con] = max(self.circuit_depths[pos_tar], self.circuit_depths[pos_con])
             self.circuit_depths[pos_tar] = max(self.circuit_depths[pos_tar], self.circuit_depths[pos_con])
             self.circuit_depths[pos_con] += 1
             self.circuit_depths[pos_tar] += 1
-            if max(self.circuit_depths) > self.max_circuit_depth:
-                return self.max_circuit_depth
-            else:
+            if max(self.circuit_depths) <= self.max_circuit_depth:
                 self.circuit_gates[pos_con].append(a)
                 self.circuit_gates[pos_tar].append(a)
-                return max(self.circuit_depths)
         else:
-        '''
-        self.circuit_depths[pos_gate] += 1
-        if max(self.circuit_depths) > self.max_circuit_depth:
-            return self.max_circuit_depth
-        else:
-            self.circuit_gates[pos_gate].append(a)
-            return max(self.circuit_depths)
+            self.circuit_depths[pos_tar] += 1
+            if max(self.circuit_depths) <= self.max_circuit_depth:
+                self.circuit_gates[pos_tar].append(a)
 
-            # Calculate trace distance between current state and goal state
+        return max(self.circuit_depths)
+
+    # Calculate trace distance between current state and goal state
     def calc_trace_distance(self, s):
         density_s = ket2dm(s)
         density_goal = ket2dm(self.goal_state)
@@ -106,21 +105,36 @@ class IBMQMelbourne:
         else:
             return 0
 
+    def print_circuit(self, reward):
+        # Printing results in output.out
+        output = open('output.out', 'a')
+        print("Gates:", file = output)
+        print("qubit 0: ", self.circuit_gates[0], file = output)
+        print("qubit 1: ", self.circuit_gates[1], file = output)
+        print("min circuit depth: ", self.min_circuit_depth, file = output)
+        #print("Final State", self.s, file = output)
+        #print("Error", self.sum_error, file = output)
+        print("Reward", reward, file = output)
+        print("\n", file = output)
+        output.close()
+
+        return
+
     # Given an action, update internal state and return reward. If a final
     # state is reached, reset environment
-    def step(self, action, position):
-        s_prev = self.s
-        a, e = self.action2matrix(action, position)
-        self.sum_error += e
-        self.s = a*self.s # Multiply gate matrix and qubit vector
+    def step(self, action_tuple):
+        #s_prev = self.s
+        gate_matrix, error = self.action2matrix(action_tuple[0], action_tuple[1], action_tuple[2], action_tuple[3])
+        self.sum_error += error
+        self.s = gate_matrix*self.s # Multiply gate matrix and qubit vector
         reward = self.calc_trace_distance(self.s)
-        depth = self.calculate_circuit_depth(action, position)
+        depth = self.calculate_circuit_depth(action_tuple[0], action_tuple[1], action_tuple[2], action_tuple[3])
         self.is_reset = False
         circuit_gates_return = deepcopy(self.circuit_gates)
 
         # If current circuit was rewarded or maximum circuit depth reached,
         # print result and reset environment
-        if max(self.circuit_depths) > self.max_circuit_depth:
+        if depth > self.max_circuit_depth:
             self.reset()
             reward = 0
 
@@ -128,14 +142,7 @@ class IBMQMelbourne:
             reward = (reward-self.sum_error) * (self.min_circuit_depth/(depth))
             if self.min_circuit_depth > depth:
                 self.min_circuit_depth = depth
-            output = open('output.out', 'a')
-            print("Gates:", file = output)
-            print("qubit 0: ", self.circuit_gates[0], file = output)
-            print("qubit 1: ", self.circuit_gates[1], file = output)
-            print("min circuit depth: ", self.min_circuit_depth, file = output)
-            print("Reward", reward, file = output)
-            print("\n", file = output)
-            output.close()
+            self.print_circuit(reward)
             self.reset()
 
         return (self.s, reward, self.is_reset, circuit_gates_return)
@@ -143,6 +150,6 @@ class IBMQMelbourne:
     # Return the computational basis |0...0>
     def init_comp_basis(self):
         comp_basis = basis(2,0)
-        for q in range(num_qubits-1):
+        for q in range(self.num_qubits-1):
             comp_basis = tensor(comp_basis, basis(2,0))
         return comp_basis

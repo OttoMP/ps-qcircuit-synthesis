@@ -30,7 +30,7 @@ class ECM():
         for a in actions:
             action_clip = self.ECM.add_vertex()
             action[action_clip] = a
-            v_name[action_clip] = a
+            v_name[action_clip] = a[0]
             self.a_clips.append(action_clip)
 
         # Creating edges between percepts-clips and action-clips
