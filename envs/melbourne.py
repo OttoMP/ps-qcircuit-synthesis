@@ -4,7 +4,7 @@ from copy import deepcopy
 
 ### QuantumCircuitEnv environment
 
-class QuantumCircuitEnvNQubit:
+class IBMQmelbourne:
 
     def __init__(self, num_qubits, max_circuit_depth, goal_state, tolerance):
         # State and action space
@@ -22,12 +22,50 @@ class QuantumCircuitEnvNQubit:
         # Transitions
         # self.operate()
 
-        #TODO
-        self.action_space = {'X':(sigmax(), 1.54),
-                             'Y':(sigmay(), 1.54),
-                             'Z':(sigmaz(), 1.54),
-                             'H':(snot(N=1), 1.54),
-                             'CNOT':(qeye(2), 23.8)}
+        self.action_space = {'X':sigmax(),
+                             'Y':sigmay(),
+                             'Z':sigmaz(),
+                             'H':snot(N=1),
+                             'CNOT':qeye(2)}
+
+        self.error_single = {0:5.032,
+                             1:9.981,
+                             2:14.84,
+                             3:4.412,
+                             4:10.44,
+                             5:27.81,
+                             6:13.13,
+                             7:22.35,
+                             8:7.427,
+                             9:14.7,
+                             10:12.09,
+                             11:7.119,
+                             12:11.86,
+                             13:24.81,
+                             14:8.069}
+
+
+        self.error_mult = {(0,1):180.1,
+                           (0,14):320.6,
+                           (1,2):180.4,
+                           (1,13):611.1,
+                           (2,3):222.5,
+                           (2,12):490.9,
+                           (3,4):173,
+                           (3,11):344.7,
+                           (4,5):256.6,
+                           (4,10):294.9,
+                           (5,6):476,
+                           (5,9):411.2,
+                           (6,8):293.6,
+                           (7,8):312.1,
+                           (8,9):311.4,
+                           (9,10):340.5,
+                           (10,11):300,
+                           (11,12):290.8,
+                           (12,13):372,
+                           (13,14):851.6}
+
         self.max_circuit_depth = max_circuit_depth # Maximum depth accepted by
                                                    # the circuit
         self.min_circuit_depth = max_circuit_depth # Minimum depth found while
@@ -61,7 +99,7 @@ class QuantumCircuitEnvNQubit:
     # Return corresponding matrix of given gate
     def action2matrix(self, action, controlled, pos_con, pos_tar):
         # Return gate matrix from action space
-        gate, error = self.action_space[action]
+        gate = self.action_space[action]
 
         # If gate is not controlled, create the tensor product to apply in the right qubit
         if not controlled:
@@ -75,7 +113,7 @@ class QuantumCircuitEnvNQubit:
         else:
             gate = cnot(N=self.num_qubits, control=pos_con, target=pos_tar)
 
-        return gate, error
+        return gate
 
     # Update circuit depth
     def calculate_circuit_depth(self, a, controlled, pos_con, pos_tar):
@@ -101,7 +139,7 @@ class QuantumCircuitEnvNQubit:
         trace = tracedist(density_s, density_goal)
 
         if trace < self.tolerance:
-            return 100
+            return 10000
         else:
             return 0
 
@@ -113,19 +151,28 @@ class QuantumCircuitEnvNQubit:
         print("qubit 1: ", self.circuit_gates[1], file = output)
         print("min circuit depth: ", self.min_circuit_depth, file = output)
         #print("Final State", self.s, file = output)
-        #print("Error", self.sum_error, file = output)
+        print("Error", self.sum_error, file = output)
         print("Reward", reward, file = output)
         print("\n", file = output)
         output.close()
 
         return
 
+    def calc_error(self, pos_con, pos_tar):
+        if pos_con == pos_tar:
+            error = self.error_single[pos_tar]
+        else:
+            error = self.error_mult[(min(pos_con, pos_tar), max(pos_con, pos_tar))]
+
+        self.sum_error += error
+        return
+
     # Given an action, update internal state and return reward. If a final
     # state is reached, reset environment
     def step(self, action_tuple):
         #s_prev = self.s
-        gate_matrix, error = self.action2matrix(action_tuple[0], action_tuple[1], action_tuple[2], action_tuple[3])
-        self.sum_error += error
+        gate_matrix = self.action2matrix(action_tuple[0], action_tuple[1], action_tuple[2], action_tuple[3])
+        self.calc_error(action_tuple[2], action_tuple[3])
         self.s = gate_matrix*self.s # Multiply gate matrix and qubit vector
         reward = self.calc_trace_distance(self.s)
         depth = self.calculate_circuit_depth(action_tuple[0], action_tuple[1], action_tuple[2], action_tuple[3])

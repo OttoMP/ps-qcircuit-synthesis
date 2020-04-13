@@ -7,7 +7,7 @@ if "../" not in sys.path:
 
 from PS_agent import PS_agent
 from envs.quantum_circuit import QuantumCircuitEnv2Qubits, QuantumCircuitEnv3Qubits, QuantumCircuitEnv4Qubits, QuantumCircuitEnv5Qubits
-from envs.melbourne import QuantumCircuitEnvNQubits
+from envs.melbourne import IBMQmelbourne
 from lib.simulation import Simulation
 
 interactive = False
@@ -46,7 +46,7 @@ env = IBMQmelbourne(2, 3, goal_state, 1e-13)
 
 # Agents instantiation
 print("Creating Agent")
-action_space = [('X', False, 0, 0), ('CNOT10', True, 1, 0)]
+action_space = [('X', False, 0, 0), ('CNOT', True, 1, 0)]
 agent = PS_agent(action_space, [env.reset()], eta=0.01, gamma=0.001)
 
 # Simulation instantiation
