@@ -1,0 +1,32 @@
+Gates:
+qubit 0:  ['CNOT20']
+qubit 1:  ['CNOT21']
+qubit 2:  ['H2', 'CNOT20', 'CNOT21']
+min circuit depth:  3.0
+Reward 123.5
+
+
+Gates:
+qubit 0:  ['Y0', 'CNOT10', 'Y0', 'CNOT20']
+qubit 1:  ['CNOT10', 'CNOT21']
+qubit 2:  ['X2', 'H2', 'Z2', 'CNOT21', 'CNOT20']
+min circuit depth:  3.0
+Reward 24.852
+
+
+Gates:
+qubit 0:  ['Z0', 'Z0', 'Z0', 'CNOT10']
+qubit 1:  ['CNOT21', 'X1', 'CNOT10']
+qubit 2:  ['H2', 'CNOT21', 'Y2', 'Z2']
+min circuit depth:  3.0
+Reward 43.897499999999994
+
+
+Gates:
+qubit 0:  ['CNOT20']
+qubit 1:  ['CNOT21']
+qubit 2:  ['H2', 'CNOT20', 'CNOT21']
+min circuit depth:  3.0
+Reward 74.1
+
+

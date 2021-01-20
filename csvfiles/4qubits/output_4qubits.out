@@ -1,0 +1,70 @@
+Gates:
+
+qubit 0:  ['CNOT20']
+qubit 1:  ['H1', 'H1', 'Y1', 'CNOT21', 'X1']
+qubit 2:  ['CNOT32', 'CNOT21', 'CNOT20']
+qubit 3:  ['Z3', 'H3', 'CNOT32']
+min circuit depth:  5.0
+Right circuit 57.86399999999996
+
+
+Gates:
+
+qubit 0:  ['CNOT20', 'X0', 'X0', 'CNOT20']
+qubit 1:  ['X1', 'CNOT21', 'Y1']
+qubit 2:  ['CNOT20', 'Y2', 'CNOT32', 'CNOT21', 'CNOT20']
+qubit 3:  ['X3', 'H3', 'X3', 'Y3', 'CNOT32', 'X3', 'Z3']
+min circuit depth:  5.0
+Right circuit 18.279999999999973
+
+
+Gates:
+
+qubit 0:  ['CNOT20', 'X0', 'Y0', 'CNOT10']
+qubit 1:  ['CNOT21', 'CNOT10']
+qubit 2:  ['CNOT20', 'CNOT32', 'CNOT21']
+qubit 3:  ['H3', 'Y3', 'Y3', 'X3', 'X3', 'CNOT32']
+min circuit depth:  4.0
+Right circuit 40.89999999999996
+
+
+Gates:
+
+qubit 0:  ['CNOT10']
+qubit 1:  ['Z1', 'Z1', 'CNOT21', 'CNOT10']
+qubit 2:  ['CNOT32', 'CNOT21', 'Y2', 'Y2']
+qubit 3:  ['H3', 'CNOT32']
+min circuit depth:  4.0
+Right circuit 44.36799999999999
+
+
+Gates:
+
+qubit 0:  ['CNOT20', 'CNOT10', 'Y0', 'X0', 'CNOT10']
+qubit 1:  ['CNOT10', 'CNOT21', 'CNOT10']
+qubit 2:  ['CNOT20', 'CNOT32', 'CNOT21']
+qubit 3:  ['H3', 'CNOT32']
+min circuit depth:  4.0
+Right circuit 15.103999999999997
+
+
+Gates:
+
+qubit 0:  ['CNOT20']
+qubit 1:  ['CNOT21', 'Z1', 'CNOT21']
+qubit 2:  ['CNOT21', 'CNOT32', 'CNOT21', 'CNOT20']
+qubit 3:  ['H3', 'CNOT32']
+min circuit depth:  4.0
+Right circuit 16.70999999999998
+
+
+Gates:
+
+qubit 0:  ['Z0', 'X0', 'Y0', 'CNOT10']
+qubit 1:  ['Y1', 'Y1', 'CNOT21', 'CNOT10']
+qubit 2:  ['Y2', 'X2', 'CNOT32', 'CNOT21', 'Y2', 'X2']
+qubit 3:  ['H3', 'Y3', 'CNOT32', 'X3', 'X3']
+min circuit depth:  4.0
+Right circuit 25.21333333333329
+
+

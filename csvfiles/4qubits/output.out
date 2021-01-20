@@ -1,0 +1,10 @@
+Gates:
+
+qubit 0:  ['CNOT10']
+qubit 1:  ['CNOT21', 'CNOT10']
+qubit 2:  ['CNOT32', 'CNOT21']
+qubit 3:  ['H3', 'CNOT32']
+min circuit depth:  3.0
+Right circuit 141.11999999999995
+
+
