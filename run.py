@@ -6,7 +6,6 @@ if "../" not in sys.path:
     sys.path.append("../")
 
 from PS_agent import PS_agent
-from envs.quantum_circuit import QuantumCircuitEnv2Qubits, QuantumCircuitEnv3Qubits, QuantumCircuitEnv4Qubits, QuantumCircuitEnv5Qubits
 from envs.melbourne import IBMQmelbourne
 from lib.simulation import Simulation
 

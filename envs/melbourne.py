@@ -1,5 +1,9 @@
 import numpy as np
-from qutip import tensor, basis, sigmax, sigmay, sigmaz, qeye, rx, ry, rz, snot, cnot, ket2dm, tracedist
+from qutip.tensor import tensor
+from qutip.states import basis, ket2dm
+from qutip.metrics import tracedist
+from qutip.operators import sigmax, sigmay, sigmaz, qeye
+from qutip.qip.operations import swap, iswap, rx, ry, rz, snot, cnot
 from copy import deepcopy
 
 ### QuantumCircuitEnv environment
