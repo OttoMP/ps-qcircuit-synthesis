@@ -3,12 +3,12 @@ from qutip.tensor import tensor
 from qutip.states import basis, ket2dm
 from qutip.metrics import tracedist
 from qutip.operators import sigmax, sigmay, sigmaz, qeye
-from qutip.qip.operations import swap, iswap, rx, ry, rz, snot, cnot
+from qutip.qip.operations import swap, iswap, rx, ry, rz, snot, cnot, phasegate
 from copy import deepcopy
 
 ### QuantumCircuitEnv environment
 
-class IBMQmelbourne:
+class Melbourne:
 
     def __init__(self, num_qubits, max_circuit_depth, goal_state, tolerance):
         # State and action space
@@ -29,6 +29,7 @@ class IBMQmelbourne:
         self.action_space = {'X':sigmax(),
                              'Y':sigmay(),
                              'Z':sigmaz(),
+                             'T':phasegate(np.pi/4),
                              'H':snot(N=1),
                              'CNOT':qeye(2)}
 
@@ -110,9 +111,9 @@ class IBMQmelbourne:
             for q in range(self.num_qubits):
                 if q == pos_tar:
                     pass
-                if q < pos_tar:
-                    gate = tensor(gate, qeye(2))
                 if q > pos_tar:
+                    gate = tensor(gate, qeye(2))
+                if q < pos_tar:
                     gate = tensor(qeye(2), gate)
         else:
             gate = cnot(N=self.num_qubits, control=pos_con, target=pos_tar)
@@ -151,10 +152,10 @@ class IBMQmelbourne:
         # Printing results in output.out
         output = open('output.out', 'a')
         print("Gates:", file = output)
-        print("qubit 0: ", self.circuit_gates[0], file = output)
-        print("qubit 1: ", self.circuit_gates[1], file = output)
+        for qubit in range(self.num_qubits):
+            print("qubit " + str(qubit) + ": ", self.circuit_gates[qubit], file = output)
         print("min circuit depth: ", self.min_circuit_depth, file = output)
-        #print("Final State", self.s, file = output)
+        print("Final State", self.s, file = output)
         print("Error", self.sum_error, file = output)
         print("Reward", reward, file = output)
         print("\n", file = output)

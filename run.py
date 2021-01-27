@@ -6,7 +6,7 @@ if "../" not in sys.path:
     sys.path.append("../")
 
 from PS_agent import PS_agent
-from envs.melbourne import IBMQmelbourne
+from envs.ibm_qx import Melbourne
 from lib.simulation import Simulation
 
 interactive = False
@@ -29,11 +29,15 @@ b51 = tensor(basis(2,1), basis(2,1), basis(2,1), basis(2,1), basis(2,1))
 
 # Bell State to be reached
 print("Defining goal state")
+# Qubit reading:
+# qubit 0 | qubit 1 | qubit 2...
+
 #goal_state = 1/np.sqrt(2) * (zero+three)
 #goal_state = 1/np.sqrt(2) * (b30+b31)
 #goal_state = 1/np.sqrt(2) * (b40+b41)
 #goal_state = 1/np.sqrt(2) * (b50+b51)
-goal_state = three
+goal_state = tensor(basis(2,1), basis(2,1), basis(2,0), basis(2,0), basis(2,0), basis(2,0), basis(2,0), basis(2,0), basis(2,0), basis(2,0))
+print(goal_state)
 
 # Enviroments instantiation
 print("Creating Environment")
@@ -41,11 +45,12 @@ print("Creating Environment")
 #env = QuantumCircuitEnv3Qubits(5, goal_state, 1e-13)
 #env = QuantumCircuitEnv4Qubits(6, goal_state, 1e-13)
 #env = QuantumCircuitEnv5Qubits(7, goal_state, 1e-13)
-env = IBMQmelbourne(2, 3, goal_state, 1e-13)
+env = Melbourne(10, 3, goal_state, 1e-13)
 
 # Agents instantiation
 print("Creating Agent")
-action_space = [('X', False, 0, 0), ('CNOT', True, 1, 0)]
+action_space = [('X', False, 0, 0), ('CNOT', True, 0, 1)]
+#action_space = [('X', False, 0, 0), ('X', False, 1, 1), ('X', False, 2, 2)]
 agent = PS_agent(action_space, [env.reset()], eta=0.01, gamma=0.001)
 
 # Simulation instantiation
@@ -54,4 +59,4 @@ experiment = Simulation(env, agent)
 
 # Run simulation 200 times
 print("Starting simulation")
-experiment.run_ps(200)
+experiment.run_ps(20)
