@@ -47,7 +47,11 @@ print("Creating Agent")
 # An action space is a list with all possible actions from the agent
 # Currently the only gates available are X, Y, Z, H, T and CNOT
 # Action = (Gate Name, Controlled?, Control Qubit, Target Qubit)
-action_space = [('X', False, 0, 0), ('CNOT', True, 0, 1), ('X', False, 1, 1), ('X', False, 2, 2), ('X', False, 3, 3)]
+action_space = [('X', False, 0, 0),
+                ('CNOT', True, 0, 1),
+                ('X', False, 1, 1),
+                ('X', False, 2, 2),
+                ('X', False, 3, 3)]
 eta_param = 0.01
 gamma_param = 0.01
 agent = PS_agent(action_space, [env.reset()], eta=eta_param, gamma=gamma_param)
