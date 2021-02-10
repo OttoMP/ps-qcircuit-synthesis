@@ -62,7 +62,7 @@ class Simulation:
                 next_percept, reward, done, circuit_found = self.env.step(action)
 
                 if reward > 0:
-                    print("You have learned something new!", reward)
+                    print("You reacheds your goal!", reward)
                     circuits_found.add(str(circuit_found))
 
 

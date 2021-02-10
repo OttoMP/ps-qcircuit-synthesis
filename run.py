@@ -21,7 +21,7 @@ print("Defining goal state")
 # e.g. a bell state
 # bin_zero   = tensor(basis(2,0), basis(2,0)) -> |00>
 # bin_three  = tensor(basis(2,1), basis(2,1)) -> |11>
-# bell_state = 1/np.sqrt(2) * (zero+three)
+# bell_state = 1/np.sqrt(2) * (bin_zero+bin_three)
 
 
 # Define here your goal state
@@ -35,6 +35,8 @@ print("Creating Environment")
 # architectures It is possible to use less qubits than the maximum available by
 # the architecture however the qubits used will be the ones listed with the
 # smallest number until the required amount of qubits is filled
+# Available Environments:
+# Melbourne, Athens, Santiago, Valencia, Vigo, Yorktown
 #
 # Environment = (Number of Qubits, Maximum Circuit Depth, Goal State, Reward, Tolerance)
 env = Melbourne(4, 3, goal_state, 50, 1e-13)
@@ -43,9 +45,12 @@ env = Melbourne(4, 3, goal_state, 50, 1e-13)
 print("Creating Agent")
 # Agents instantiation
 # An action space is a list with all possible actions from the agent
+# Currently the only gates available are X, Y, Z, H, T and CNOT
 # Action = (Gate Name, Controlled?, Control Qubit, Target Qubit)
 action_space = [('X', False, 0, 0), ('CNOT', True, 0, 1), ('X', False, 1, 1), ('X', False, 2, 2), ('X', False, 3, 3)]
-agent = PS_agent(action_space, [env.reset()], eta=0.01, gamma=0.001)
+eta_param = 0.01
+gamma_param = 0.01
+agent = PS_agent(action_space, [env.reset()], eta=eta_param, gamma=gamma_param)
 
 # Simulation instantiation
 print("Setting simulation parameters")
